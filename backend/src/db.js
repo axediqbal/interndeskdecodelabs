@@ -12,15 +12,30 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
+function localFile() {
+  // Normal case: backend/data next to the source (local dev, persistent).
+  // Vercel's filesystem is read-only, so fall back to /tmp (ephemeral per
+  // instance) with a loud warning — setting TURSO_DATABASE_URL removes this.
+  const primary = path.join(here, '..', 'data');
+  try {
+    fs.mkdirSync(primary, { recursive: true });
+    fs.accessSync(primary, fs.constants.W_OK);
+    return path.join(primary, 'interndesk.sqlite');
+  } catch {
+    const tmp = path.join('/tmp', 'interndesk-data');
+    fs.mkdirSync(tmp, { recursive: true });
+    console.log('[InternDesk] WARNING: read-only filesystem — using ephemeral /tmp database. Set TURSO_DATABASE_URL for persistence.');
+    return path.join(tmp, 'interndesk.sqlite');
+  }
+}
+
 function connect() {
   const remote = process.env.TURSO_DATABASE_URL;
   if (remote) {
     console.log('[InternDesk] using Turso database');
     return createClient({ url: remote, authToken: process.env.TURSO_AUTH_TOKEN });
   }
-  const dataDir = process.env.DB_DIR || path.join(here, '..', 'data');
-  fs.mkdirSync(dataDir, { recursive: true });
-  const fileUrl = pathToFileURL(path.join(dataDir, 'interndesk.sqlite')).href;
+  const fileUrl = pathToFileURL(localFile()).href;
   return createClient({ url: fileUrl });
 }
 
