@@ -500,16 +500,66 @@ button.card:hover {
   .stats { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 640px) {
-  .topbar { padding: 12px 16px; }
-  .toolbar { padding: 16px 16px 4px; }
-  .stats { padding: 16px 16px 4px; }
-  .wrap { padding: 16px; }
-  .foot { padding: 16px; }
-  .api-health span.mono { display: none; }
-  .form-grid { grid-template-columns: 1fr; }
+  /* Topbar: compact, keep brand + key actions on one line */
+  .topbar { padding: 10px 14px; gap: 10px; }
+  .brand { gap: 10px; }
+  .brand-mark { width: 36px; height: 36px; border-radius: 11px; font-size: 15px; }
+  .brand-text h1 { font-size: 17px; }
   .brand-text p { display: none; }
+  .topbar-right { gap: 8px; }
+  .api-health { padding: 7px 10px; font-size: 11px; }
+  .api-health span.mono { display: none; }
+  #newInternBtn { padding: 10px 14px; font-size: 13px; }
+
+  /* Hero */
+  .hero { padding: 26px 16px 4px; }
+  .hero-sub { font-size: 14px; }
+  .palette-cta { padding: 10px 14px; font-size: 12.5px; }
+
+  /* Toolbar: search goes full-width, chips scroll horizontally */
+  .toolbar { padding: 14px 16px 4px; gap: 10px; }
+  .search { flex: 1 1 100%; max-width: none; }
   .search-kbd { display: none; }
-  .stat-num { font-size: 28px; }
+  .filters {
+    flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto;
+    padding-bottom: 6px; margin: 0 -16px; padding-left: 16px; padding-right: 16px;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .chip { flex: none; }
+  .toolbar-meta { margin-left: 0; flex: 1 1 100%; }
+
+  /* Stats + cards */
+  .stats { padding: 14px 16px 4px; gap: 10px; }
+  .stat { padding: 14px 14px; }
+  .stat-num { font-size: 26px; }
+  .wrap { padding: 14px 16px 16px; }
+  .grid { gap: 12px; }
+  .foot { padding: 14px 16px; }
+
+  /* Drawer becomes a full-bleed sheet */
+  .drawer { border-radius: 0; border-left: none; padding-left: 0; }
+  .drawer-head { padding: 16px 18px; }
+  .drawer-body { padding: 18px; }
+  .drawer-foot { padding: 14px 18px; }
+  .drawer-foot .btn { flex: 1 1 0; justify-content: center; }
+
+  /* Command palette sits lower with more list room */
+  .palette-overlay { padding: 7vh 12px 12px; }
+  .palette-list { max-height: 52vh; }
+
+  /* Toasts go edge-to-edge */
+  .toasts { right: 12px; left: 12px; bottom: 12px; max-width: none; }
+
+  /* Intern form stacks on mobile */
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+/* Touch devices: comfortable tap targets */
+@media (pointer: coarse) {
+  .btn, .icon-btn, .palette-cta { min-height: 44px; }
+  .chip { padding: 11px 18px; }
+  .palette-item { padding: 12px; }
 }
 
 /* Accessibility: honor reduced-motion — kill the choreography, keep the UI */
