@@ -1,0 +1,1 @@
+{"description":"InternDesk — DecodeLabs Project 4: Frontend & Backend Integration","engines":{"node":">=20"},"name":"interndesk","private":true,"type":"module","version":"1.0.0","workspaces":["backend"]}

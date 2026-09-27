@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InternDesk — DecodeLabs Intern Directory</title>
+  <meta name="description" content="InternDesk: DecodeLabs intern directory & management console. Project 4 — Frontend & Backend Integration." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Network rail: glowing fetch-lifecycle line (violet=in-flight, green=2xx, amber=4xx, red=5xx) -->
+  <div id="rail" class="rail" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">ID</span>
+      <div class="brand-text">
+        <h1>InternDesk</h1>
+        <p>DecodeLabs · Intern Directory Console</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="api-health" id="apiHealth" title="Backend reachability">
+        <span class="dot dot--idle" id="apiDot"></span>
+        <span class="mono" id="apiHealthText">API …</span>
+      </div>
+      <button id="chaosBtn" class="icon-btn" aria-label="Chaos settings" aria-expanded="false"></button>
+      <button id="newInternBtn" class="btn btn-primary"><span class="btn-icon" aria-hidden="true"></span>New intern</button>
+    </div>
+    <div id="chaosPanel" class="chaos-panel hidden" role="dialog" aria-label="Chaos settings">
+      <h2>Chaos</h2>
+      <p class="chaos-note">Live demo switches. They append <span class="mono">simulateLatency</span> / <span class="mono">simulateError</span> to real API requests — nothing is faked.</p>
+      <label class="switch-row">
+        <span class="switch"><input type="checkbox" id="chaosLatency" /><span class="knob"></span></span>
+        <span>Simulate 1.5s latency <span class="mono chaos-param">?simulateLatency=1500</span></span>
+      </label>
+      <label class="switch-row">
+        <span class="switch"><input type="checkbox" id="chaosError" /><span class="knob"></span></span>
+        <span>Simulate server errors <span class="mono chaos-param">?simulateError=true</span></span>
+      </label>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>DecodeLabs · Intern Directory</p>
+      <h1 class="hero-title">
+        <span style="animation-delay:.05s">Everyone</span>
+        <span class="typed-wrap" style="animation-delay:.12s"><span id="typedWord" class="typed-word"></span><span class="caret" aria-hidden="true"></span></span>
+        <span style="animation-delay:.19s">at</span>
+        <span class="hero-accent" style="animation-delay:.26s">DecodeLabs.</span>
+      </h1>
+      <p class="hero-sub">Search, filter, and manage the whole crew — every change hits the live API.</p>
+    </div>
+    <button class="palette-cta" id="paletteCta" type="button">
+      <span class="kbd">⌘K</span>
+      <span>Quick actions</span>
+    </button>
+  </section>
+
+  <div class="toolbar">
+    <div class="search">
+      <span class="search-icon" aria-hidden="true"></span>
+      <input id="searchInput" type="search" placeholder="Search name, email, role, cohort…" autocomplete="off" aria-label="Search interns" />
+      <kbd class="search-kbd" aria-hidden="true">⌘K</kbd>
+    </div>
+    <div class="filters" id="statusFilters" role="group" aria-label="Filter by status">
+      <button class="chip chip--on" data-status="all">All</button>
+      <button class="chip" data-status="active">Active</button>
+      <button class="chip" data-status="alumni">Alumni</button>
+      <button class="chip" data-status="pending">Pending</button>
+    </div>
+    <div class="toolbar-meta mono" id="resultMeta" aria-live="polite"></div>
+  </div>
+
+  <section class="stats" id="stats" aria-label="Internship overview">
+    <div class="stat stat--total">
+      <span class="stat-num" id="statTotal">–</span>
+      <span class="stat-label mono">Total interns</span>
+    </div>
+    <div class="stat stat--ok">
+      <span class="stat-num" id="statActive">–</span>
+      <span class="stat-label mono">Active</span>
+    </div>
+    <div class="stat stat--accent">
+      <span class="stat-num" id="statAlumni">–</span>
+      <span class="stat-label mono">Alumni</span>
+    </div>
+    <div class="stat stat--warn">
+      <span class="stat-num" id="statPending">–</span>
+      <span class="stat-label mono">Pending</span>
+    </div>
+  </section>
+  <div class="distbar" aria-hidden="true">
+    <span class="dist-seg seg-active" id="distActive"></span><span class="dist-seg seg-alumni" id="distAlumni"></span><span class="dist-seg seg-pending" id="distPending"></span>
+  </div>
+
+  <main class="wrap">
+    <div id="directory" class="grid" aria-live="polite"></div>
+    <div id="emptyState" class="empty hidden">
+      <p class="empty-kicker mono">0 results</p>
+      <h2>No interns match</h2>
+      <p>Try a different search, or clear the status filter. The directory itself is fine — the query just found nothing.</p>
+      <button id="clearFiltersBtn" class="btn btn-ghost">Clear search &amp; filters</button>
+    </div>
+  </main>
+
+  <div id="drawerRoot"></div>
+  <div id="modalRoot"></div>
+
+  <!-- Command palette: ⌘K / Ctrl+K — fuzzy-find interns, run actions -->
+  <div id="paletteOverlay" class="palette-overlay hidden" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="palette">
+      <div class="palette-input-row">
+        <span class="search-icon" aria-hidden="true"></span>
+        <input id="paletteInput" type="text" placeholder="Type a name, or try “new intern”…" autocomplete="off" aria-label="Command palette" />
+        <kbd class="kbd">esc</kbd>
+      </div>
+      <div id="paletteList" class="palette-list" role="listbox" aria-label="Results"></div>
+      <div class="palette-foot mono">
+        <span><kbd class="kbd">↑↓</kbd> navigate</span>
+        <span><kbd class="kbd">↵</kbd> open</span>
+        <span><kbd class="kbd">esc</kbd> close</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <footer class="foot mono">
+    <span>InternDesk · Project 4 — Frontend &amp; Backend Integration</span>
+    <span id="footStatus"></span>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
