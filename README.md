@@ -1,5 +1,7 @@
 # InternDesk
 
+**Live:** https://interndesk.vercel.app
+
 DecodeLabs **Project 4: Frontend & Backend Integration** — an intern directory &
 management console. Search, filter, create, edit (inline PATCH + full PUT),
 delete, and a live **Chaos toggle** that demos loading/error states on real
